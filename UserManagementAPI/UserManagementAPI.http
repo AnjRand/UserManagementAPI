@@ -1,6 +1,121 @@
 @UserManagementAPI_HostAddress = http://localhost:5113
+@token = 
 
-GET {{UserManagementAPI_HostAddress}}/weatherforecast/
+### 1. AUTHENTICATION TESTS
+
+### 1a. Generate a test token (Development only)
+POST {{UserManagementAPI_HostAddress}}/api/auth/token
+Accept: application/json
+
+### 1b. Login with API Key
+POST {{UserManagementAPI_HostAddress}}/api/auth/login
+X-API-Key: dev-api-key-123
+Accept: application/json
+
+### 1c. Verify token validity
+GET {{UserManagementAPI_HostAddress}}/api/auth/verify
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### 2. ERROR HANDLING TESTS
+
+### 2a. Test - Throw unhandled exception
+GET {{UserManagementAPI_HostAddress}}/api/diagnostic/throw-exception
+Accept: application/json
+
+### 2b. Test - Throw null exception
+GET {{UserManagementAPI_HostAddress}}/api/diagnostic/throw-null-exception
+Accept: application/json
+
+### 2c. Test - Throw unauthorized exception
+GET {{UserManagementAPI_HostAddress}}/api/diagnostic/throw-unauthorized
+Accept: application/json
+
+### 2d. Test - Health check (should succeed)
+GET {{UserManagementAPI_HostAddress}}/api/diagnostic/health
+Accept: application/json
+
+###
+
+### 3. AUTHORIZATION TESTS
+
+### 3a. Test - Access protected endpoint WITHOUT token (should fail 401)
+GET {{UserManagementAPI_HostAddress}}/api/diagnostic/protected
+Accept: application/json
+
+### 3b. Test - Access protected endpoint WITH valid token (should succeed)
+GET {{UserManagementAPI_HostAddress}}/api/diagnostic/protected
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### 3c. Test - Access protected endpoint WITH invalid token (should fail 401)
+GET {{UserManagementAPI_HostAddress}}/api/diagnostic/protected
+Authorization: Bearer invalid-token-xyz
+Accept: application/json
+
+###
+
+### 4. USER MANAGEMENT TESTS
+
+### 4a. Get all users (requires auth)
+GET {{UserManagementAPI_HostAddress}}/api/users
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### 4b. Create user with valid data (requires auth)
+POST {{UserManagementAPI_HostAddress}}/api/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+
+### 4c. Create user with invalid email (validation error 400)
+POST {{UserManagementAPI_HostAddress}}/api/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "email": "invalid-email"
+}
+
+### 4d. Create user without name (validation error 400)
+POST {{UserManagementAPI_HostAddress}}/api/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "",
+  "email": "test@example.com"
+}
+
+### 4e. Create user without auth (401 Unauthorized)
+POST {{UserManagementAPI_HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "name": "No Auth User",
+  "email": "noauth@example.com"
+}
+
+### 4f. Update user (requires auth)
+PUT {{UserManagementAPI_HostAddress}}/api/users/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Name",
+  "email": "updated@example.com"
+}
+
+### 4g. Delete user (requires auth)
+DELETE {{UserManagementAPI_HostAddress}}/api/users/1
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ###
